@@ -2,17 +2,13 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-syntax = "proto3";
+syntax = "proto2";
 
 package third_party.dart.protoc_plugin.test.protos;
 
-message Foo {
-  optional int32 optional_field = 1;
-  int32 non_optional_field = 2;
-  optional Submessage optional_submessage = 3;
-  Submessage non_optional_submessage = 4;
+message OptionalBoolTest {
+  required bool non_optional_bool = 1;
+  optional bool optional_bool = 2;
+  optional bool optional_bool_with_default = 3 [default = true];
 }
 
-message Submessage {
- int32 a = 1;
-}

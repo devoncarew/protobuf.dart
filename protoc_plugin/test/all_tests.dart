@@ -34,6 +34,7 @@ import 'omit_enum_names_test.dart' as omit_enum_names;
 import 'omit_field_names_test.dart' as omit_field_names;
 import 'omit_message_names_test.dart' as omit_message_names;
 import 'oneof_test.dart' as oneof;
+import 'optional_bool.dart' as optional_bool;
 import 'proto3_optional_test.dart' as proto3_optional;
 import 'protoc_options_test.dart' as protoc_options;
 import 'repeated_field_test.dart' as repeated_field;
@@ -76,6 +77,7 @@ void main() {
   omit_field_names.main();
   omit_message_names.main();
   oneof.main();
+  optional_bool.main();
   proto3_optional.main();
   protoc_options.main();
   repeated_field.main();

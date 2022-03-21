@@ -47,6 +47,7 @@ TEST_PROTO_LIST = \
 	nested_extension \
 	non_nested_extension \
 	oneof \
+	optional_bool \
 	reserved_names \
 	reserved_names_extension \
 	reserved_names_message \

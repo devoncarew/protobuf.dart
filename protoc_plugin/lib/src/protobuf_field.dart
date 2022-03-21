@@ -291,7 +291,7 @@ class ProtobufField {
     if (isRepeated) return 'null';
     switch (descriptor.type) {
       case FieldDescriptorProto_Type.TYPE_BOOL:
-        return _getDefaultAsBoolExpr('false');
+        return _getDefaultAsBoolExpr();
       case FieldDescriptorProto_Type.TYPE_INT32:
       case FieldDescriptorProto_Type.TYPE_UINT32:
       case FieldDescriptorProto_Type.TYPE_SINT32:
@@ -313,7 +313,7 @@ class ProtobufField {
     assert(!isRepeated);
     switch (descriptor.type) {
       case FieldDescriptorProto_Type.TYPE_BOOL:
-        return _getDefaultAsBoolExpr(null);
+        return _getDefaultAsBoolExpr();
       case FieldDescriptorProto_Type.TYPE_FLOAT:
       case FieldDescriptorProto_Type.TYPE_DOUBLE:
         if (!descriptor.hasDefaultValue()) {
@@ -379,11 +379,12 @@ class ProtobufField {
     }
   }
 
-  String _getDefaultAsBoolExpr(String noDefault) {
-    if (descriptor.hasDefaultValue() && 'false' != descriptor.defaultValue) {
+  String _getDefaultAsBoolExpr() {
+    if (descriptor.hasDefaultValue()) {
       return descriptor.defaultValue;
+    } else {
+      return 'false';
     }
-    return noDefault;
   }
 
   String _getDefaultAsStringExpr(String noDefault) {
