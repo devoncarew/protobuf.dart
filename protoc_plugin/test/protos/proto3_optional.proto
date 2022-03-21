@@ -11,7 +11,8 @@ message Foo {
   int32 non_optional_field = 2;
   optional Submessage optional_submessage = 3;
   Submessage non_optional_submessage = 4;
-
+  bool non_optional_bool = 5;
+  optional bool optional_bool = 6;
 }
 
 message Submessage {
