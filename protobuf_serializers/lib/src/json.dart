@@ -1,14 +1,14 @@
-// Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
+// Copyright (c) 2011, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of protobuf;
+part of protobuf_serializers;
 
-Map<String, dynamic> _writeToJsonMap(FieldSet fs) {
+Map<String, dynamic> writeToJsonMap(FieldSet fs) {
   dynamic convertToMap(dynamic fieldValue, int fieldType) {
     var baseType = PbFieldType.baseType(fieldType);
 
-    if (_isRepeated(fieldType)) {
+    if (isRepeatedFieldType(fieldType)) {
       return List.from(fieldValue.map((e) => convertToMap(e, baseType)));
     }
 
@@ -56,7 +56,7 @@ Map<String, dynamic> _writeToJsonMap(FieldSet fs) {
     if (value == null || (value is List && value.isEmpty)) {
       continue; // It's missing, repeated, or an empty byte array.
     }
-    if (_isMapField(fi.type)) {
+    if (isMapFieldType(fi.type)) {
       result['${fi.tagNumber}'] =
           _writeMap(value, fi as MapFieldInfo<dynamic, dynamic>);
       continue;
@@ -65,7 +65,7 @@ Map<String, dynamic> _writeToJsonMap(FieldSet fs) {
   }
   if (fs.hasExtensions) {
     for (var tagNumber in _sorted(fs.extensions!.tagNumbers)) {
-      var value = fs.extensions!._values[tagNumber];
+      var value = fs.extensions!.values[tagNumber];
       if (value is List && value.isEmpty) {
         continue; // It's repeated or an empty byte array.
       }
@@ -78,7 +78,7 @@ Map<String, dynamic> _writeToJsonMap(FieldSet fs) {
 
 // Merge fields from a previously decoded JSON object.
 // (Called recursively on nested messages.)
-void _mergeFromJsonMap(
+void mergeFromJsonMap(
     FieldSet fs, Map<String, dynamic> json, ExtensionRegistry? registry) {
   final keys = json.keys;
   final info = fs.meta;
@@ -86,7 +86,7 @@ void _mergeFromJsonMap(
     var fi = info.byTagAsString[key];
     if (fi == null) {
       if (registry == null) continue; // Unknown tag; skip
-      fi = registry.getExtension(fs._messageName, int.parse(key));
+      fi = registry.getExtension(fs.messageName, int.parse(key));
       if (fi == null) continue; // Unknown tag; skip
     }
     if (fi.isMapField) {
@@ -102,7 +102,7 @@ void _mergeFromJsonMap(
 
 void _appendJsonList(BuilderInfo meta, FieldSet fs, List jsonList, FieldInfo fi,
     ExtensionRegistry? registry) {
-  final repeated = fi._ensureRepeatedField(meta, fs);
+  final repeated = fi.ensureRepeatedField(meta, fs);
   // Micro optimization. Using "for in" generates the following and iterator
   // alloc:
   //   for (t1 = J.get$iterator$ax(json), t2 = fi.tagNumber, t3 = fi.type,
@@ -122,7 +122,7 @@ void _appendJsonList(BuilderInfo meta, FieldSet fs, List jsonList, FieldInfo fi,
 void _appendJsonMap(BuilderInfo meta, FieldSet fs, List jsonList,
     MapFieldInfo fi, ExtensionRegistry? registry) {
   final entryMeta = fi.mapEntryBuilderInfo;
-  final map = fi._ensureMapField(meta, fs) as PbMap<dynamic, dynamic>;
+  final map = fi.ensureMapField(meta, fs) as PbMap<dynamic, dynamic>;
   for (var jsonEntryDynamic in jsonList) {
     var jsonEntry = jsonEntryDynamic as Map<String, dynamic>;
     final entryFieldSet = FieldSet(null, entryMeta, null);
@@ -157,7 +157,7 @@ void _setJsonField(BuilderInfo meta, FieldSet fs, json, FieldInfo fi,
   // Therefore we run _validateField for debug builds only to validate
   // correctness of conversion.
   assert(() {
-    fs._validateField(fi, value);
+    fs.validateField(fi, value);
     return true;
   }());
   fs.setFieldUnchecked(meta, fi, value);
@@ -261,7 +261,7 @@ dynamic _convertJsonValue(BuilderInfo meta, FieldSet fs, value, int tagNumber,
       if (value is Map) {
         final messageValue = value as Map<String, dynamic>;
         var subMessage = meta.makeEmptyMessage(tagNumber, registry);
-        _mergeFromJsonMap(subMessage.fieldSet, messageValue, registry);
+        mergeFromJsonMap(subMessage.fieldSet, messageValue, registry);
         return subMessage;
       }
       expectedType = 'nested message or group';

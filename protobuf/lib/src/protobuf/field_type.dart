@@ -5,20 +5,22 @@
 // ignore_for_file: constant_identifier_names,non_constant_identifier_names
 part of protobuf;
 
-bool _isRepeated(int fieldType) => (fieldType & PbFieldType.REPEATED_BIT) != 0;
+bool isRepeatedFieldType(int fieldType) =>
+    (fieldType & PbFieldType.REPEATED_BIT) != 0;
 
-bool _isRequired(int fieldType) => (fieldType & PbFieldType.REQUIRED_BIT) != 0;
+bool isRequiredFieldType(int fieldType) =>
+    (fieldType & PbFieldType.REQUIRED_BIT) != 0;
 
-bool _isEnum(int fieldType) =>
+bool isEnumFieldType(int fieldType) =>
     PbFieldType.baseType(fieldType) == PbFieldType.ENUM_BIT;
 
-bool _isBytes(int fieldType) =>
+bool isBytesFieldType(int fieldType) =>
     PbFieldType.baseType(fieldType) == PbFieldType.BYTES_BIT;
 
-bool _isGroupOrMessage(int fieldType) =>
+bool isGroupOrMessageFieldType(int fieldType) =>
     (fieldType & (PbFieldType.GROUP_BIT | PbFieldType.MESSAGE_BIT)) != 0;
 
-bool _isMapField(int fieldType) => (fieldType & PbFieldType.MAP_BIT) != 0;
+bool isMapFieldType(int fieldType) => (fieldType & PbFieldType.MAP_BIT) != 0;
 
 /// Defines constants and functions for dealing with fieldType bits.
 class PbFieldType {

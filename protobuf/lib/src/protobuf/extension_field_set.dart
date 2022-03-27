@@ -7,7 +7,7 @@ part of protobuf;
 class ExtensionFieldSet {
   final FieldSet _parent;
   final Map<int, Extension> _info = <int, Extension>{};
-  final Map<int, dynamic> _values = <int, dynamic>{};
+  final Map<int, dynamic> values = <int, dynamic>{};
   bool _isReadOnly = false;
 
   ExtensionFieldSet(this._parent);
@@ -29,7 +29,7 @@ class ExtensionFieldSet {
   }
 
   bool _hasField(int tagNumber) {
-    var value = _values[tagNumber];
+    var value = values[tagNumber];
     if (value == null) return false;
     if (value is List) return value.isNotEmpty;
     return true;
@@ -42,16 +42,16 @@ class ExtensionFieldSet {
   List<T?> _ensureRepeatedField<T>(Extension<T?> fi) {
     assert(!_isReadOnly);
     assert(fi.isRepeated);
-    assert(fi.extendee == '' || fi.extendee == _parent._messageName);
+    assert(fi.extendee == '' || fi.extendee == _parent.messageName);
 
-    var list = _values[fi.tagNumber];
+    var list = values[fi.tagNumber];
     if (list != null) return list as List<T>;
 
     return _addInfoAndCreateList(fi) as List<T?>;
   }
 
   List<T?> _getList<T>(Extension<T?> fi) {
-    var value = _values[fi.tagNumber];
+    var value = values[fi.tagNumber];
     if (value != null) return value as List<T>;
     _checkNotInUnknown(fi);
     if (_isReadOnly) return List<T>.unmodifiable(const []);
@@ -66,7 +66,7 @@ class ExtensionFieldSet {
     return newList;
   }
 
-  dynamic getFieldOrNull(Extension extension) => _values[extension.tagNumber];
+  dynamic getFieldOrNull(Extension extension) => values[extension.tagNumber];
 
   void _clearFieldAndInfo(Extension fi) {
     _clearField(fi);
@@ -77,7 +77,7 @@ class ExtensionFieldSet {
     _ensureWritable();
     _validateInfo(fi);
     if (_parent._hasObservers) _parent._eventPlugin!.beforeClearField(fi);
-    _values.remove(fi.tagNumber);
+    values.remove(fi.tagNumber);
   }
 
   /// Sets a value for a non-repeated extension that has already been added.
@@ -93,7 +93,7 @@ class ExtensionFieldSet {
           fi, value, 'repeating field (use get + .add())'));
     }
     _ensureWritable();
-    _parent._validateField(fi, value);
+    _parent.validateField(fi, value);
     _setFieldUnchecked(fi, value);
   }
 
@@ -107,24 +107,24 @@ class ExtensionFieldSet {
     }
     _ensureWritable();
     _validateInfo(fi);
-    _parent._validateField(fi, value);
+    _parent.validateField(fi, value);
     _addInfoUnchecked(fi);
     _setFieldUnchecked(fi, value);
   }
 
   void _ensureWritable() {
-    if (_isReadOnly) frozenMessageModificationHandler(_parent._messageName);
+    if (_isReadOnly) frozenMessageModificationHandler(_parent.messageName);
   }
 
   void _validateInfo(Extension fi) {
-    if (fi.extendee != _parent._messageName) {
+    if (fi.extendee != _parent.messageName) {
       throw ArgumentError(
-          'Extension $fi not legal for message ${_parent._messageName}');
+          'Extension $fi not legal for message ${_parent.messageName}');
     }
   }
 
   void _addInfoUnchecked(Extension fi) {
-    assert(fi.extendee == _parent._messageName);
+    assert(fi.extendee == _parent.messageName);
     _info[fi.tagNumber] = fi;
   }
 
@@ -132,20 +132,20 @@ class ExtensionFieldSet {
     if (_parent._hasObservers) {
       _parent._eventPlugin!.beforeSetField(fi, value);
     }
-    _values[fi.tagNumber] = value;
+    values[fi.tagNumber] = value;
   }
 
   // Bulk operations
 
-  Iterable<int> get tagNumbers => _values.keys;
+  Iterable<int> get tagNumbers => values.keys;
   Iterable<Extension> get _infos => _info.values;
 
-  bool get _hasValues => _values.isNotEmpty;
+  bool get _hasValues => values.isNotEmpty;
 
   bool _equalValues(ExtensionFieldSet? other) =>
-      other != null && _areMapsEqual(_values, other._values);
+      other != null && _areMapsEqual(values, other.values);
 
-  void _clearValues() => _values.clear();
+  void _clearValues() => values.clear();
 
   /// Makes a shallow copy of all values from [original] to this.
   ///
@@ -172,16 +172,16 @@ class ExtensionFieldSet {
     _isReadOnly = true;
     for (var field in _info.values) {
       if (field.isRepeated) {
-        final entries = _values[field.tagNumber];
+        final entries = values[field.tagNumber];
         if (entries == null) continue;
         if (field.isGroupOrMessage) {
           for (var subMessage in entries as List<GeneratedMessage>) {
             subMessage.freeze();
           }
         }
-        _values[field.tagNumber] = entries.toFrozenPbList();
+        values[field.tagNumber] = entries.toFrozenPbList();
       } else if (field.isGroupOrMessage) {
-        final entry = _values[field.tagNumber];
+        final entry = values[field.tagNumber];
         if (entry != null) {
           (entry as GeneratedMessage).freeze();
         }

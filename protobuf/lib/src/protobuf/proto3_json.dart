@@ -8,7 +8,7 @@ Object? _writeToProto3Json(FieldSet fs, TypeRegistry typeRegistry) {
   String? convertToMapKey(dynamic key, int keyType) {
     var baseType = PbFieldType.baseType(keyType);
 
-    assert(!_isRepeated(keyType));
+    assert(!isRepeatedFieldType(keyType));
 
     switch (baseType) {
       case PbFieldType.BOOL_BIT:
@@ -35,10 +35,10 @@ Object? _writeToProto3Json(FieldSet fs, TypeRegistry typeRegistry) {
   Object? valueToProto3Json(dynamic fieldValue, int? fieldType) {
     if (fieldValue == null) return null;
 
-    if (_isGroupOrMessage(fieldType!)) {
+    if (isGroupOrMessageFieldType(fieldType!)) {
       return _writeToProto3Json(
           (fieldValue as GeneratedMessage).fieldSet, typeRegistry);
-    } else if (_isEnum(fieldType)) {
+    } else if (isEnumFieldType(fieldType)) {
       return (fieldValue as ProtobufEnum).name;
     } else {
       var baseType = PbFieldType.baseType(fieldType);
@@ -357,7 +357,7 @@ void _mergeFromProto3Json(
             }
           }
 
-          if (_isMapField(fieldInfo.type)) {
+          if (isMapFieldType(fieldInfo.type)) {
             if (value is Map) {
               final mapFieldInfo = fieldInfo as MapFieldInfo<dynamic, dynamic>;
               final Map fieldValues = fieldSet.ensureMapField(info, fieldInfo);
@@ -374,7 +374,7 @@ void _mergeFromProto3Json(
             } else {
               throw context.parseException('Expected a map', value);
             }
-          } else if (_isRepeated(fieldInfo.type)) {
+          } else if (isRepeatedFieldType(fieldInfo.type)) {
             if (value == null) {
               // `null` is accepted as the empty list [].
               fieldSet.ensureRepeatedField(info, fieldInfo);
@@ -389,7 +389,7 @@ void _mergeFromProto3Json(
             } else {
               throw context.parseException('Expected a list', value);
             }
-          } else if (_isGroupOrMessage(fieldInfo.type)) {
+          } else if (isGroupOrMessageFieldType(fieldInfo.type)) {
             // TODO(sigurdm) consider a cleaner separation between parsing and
             // merging.
             var parsedSubMessage =

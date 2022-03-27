@@ -59,10 +59,10 @@ class FieldInfo<T> {
         check = null,
         protoName = protoName ?? _unCamelCase(name),
         assert(type != 0),
-        assert(!_isGroupOrMessage(type) ||
+        assert(!isGroupOrMessageFieldType(type) ||
             subBuilder != null ||
-            _isMapField(type)),
-        assert(!_isEnum(type) || valueOf != null);
+            isMapFieldType(type)),
+        assert(!isEnumFieldType(type) || valueOf != null);
 
   // Represents a field that has been removed by a program transformation.
   FieldInfo.dummy(this.index)
@@ -84,9 +84,9 @@ class FieldInfo<T> {
         protoName = protoName ?? _unCamelCase(name) {
     ArgumentError.checkNotNull(name, 'name');
     ArgumentError.checkNotNull(tagNumber, 'tagNumber');
-    assert(_isRepeated(type));
+    assert(isRepeatedFieldType(type));
     assert(check != null);
-    assert(!_isEnum(type) || valueOf != null);
+    assert(!isEnumFieldType(type) || valueOf != null);
   }
 
   static MakeDefaultFunc? findMakeDefault(int type, dynamic defaultOrMaker) {
@@ -99,11 +99,11 @@ class FieldInfo<T> {
   /// that has been removed by a program transformation.
   bool get _isDummy => tagNumber == 0;
 
-  bool get isRequired => _isRequired(type);
-  bool get isRepeated => _isRepeated(type);
-  bool get isGroupOrMessage => _isGroupOrMessage(type);
-  bool get isEnum => _isEnum(type);
-  bool get isMapField => _isMapField(type);
+  bool get isRequired => isRequiredFieldType(type);
+  bool get isRepeated => isRepeatedFieldType(type);
+  bool get isGroupOrMessage => isGroupOrMessageFieldType(type);
+  bool get isEnum => isEnumFieldType(type);
+  bool get isMapField => isMapFieldType(type);
 
   /// Returns a read-only default value for a field.
   /// (Unlike getField, doesn't create a repeated field.)
@@ -118,7 +118,7 @@ class FieldInfo<T> {
   /// That is, it doesn't contain any required fields that aren't initialized.
   bool _hasRequiredValues(value) {
     if (value == null) return !isRequired; // missing is okay if optional
-    if (!_isGroupOrMessage(type)) return true; // primitive and present
+    if (!isGroupOrMessageFieldType(type)) return true; // primitive and present
 
     if (!isRepeated) {
       // A required message: recurse.
@@ -141,7 +141,7 @@ class FieldInfo<T> {
   void _appendInvalidFields(List<String> problems, value, String prefix) {
     if (value == null) {
       if (isRequired) problems.add('$prefix$name');
-    } else if (!_isGroupOrMessage(type)) {
+    } else if (!isGroupOrMessageFieldType(type)) {
       // primitive and present
     } else if (!isRepeated) {
       // Required message/group: recurse.
@@ -182,7 +182,7 @@ class FieldInfo<T> {
 
   /// Convenience method to thread this FieldInfo's reified type parameter to
   /// _FieldSet._ensureRepeatedField.
-  List<T?> _ensureRepeatedField(BuilderInfo meta, FieldSet fs) {
+  List<T?> ensureRepeatedField(BuilderInfo meta, FieldSet fs) {
     return fs.ensureRepeatedField<T>(meta, this);
   }
 
@@ -226,14 +226,14 @@ class MapFieldInfo<K, V> extends FieldInfo<PbMap<K, V>?> {
             protoName: protoName) {
     ArgumentError.checkNotNull(name, 'name');
     ArgumentError.checkNotNull(tagNumber, 'tagNumber');
-    assert(_isMapField(type));
-    assert(!_isEnum(type) || valueOf != null);
+    assert(isMapFieldType(type));
+    assert(!isEnumFieldType(type) || valueOf != null);
   }
 
   FieldInfo get valueFieldInfo =>
       mapEntryBuilderInfo.fieldInfo[PbMap.valueFieldNumber]!;
 
-  Map<K, V> _ensureMapField(BuilderInfo meta, FieldSet fs) {
+  Map<K, V> ensureMapField(BuilderInfo meta, FieldSet fs) {
     return fs.ensureMapField<K, V>(meta, this);
   }
 

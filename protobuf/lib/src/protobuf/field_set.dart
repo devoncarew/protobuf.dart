@@ -117,7 +117,7 @@ class FieldSet {
 
   // Metadata about multiple fields
 
-  String get _messageName => meta.qualifiedMessageName;
+  String get messageName => meta.qualifiedMessageName;
   bool get _hasRequiredFields => meta.hasRequiredFields;
 
   /// The FieldInfo for each non-extension field.
@@ -159,7 +159,7 @@ class FieldSet {
   FieldInfo _ensureInfo(int tagNumber) {
     var fi = _getFieldInfoOrNull(tagNumber);
     if (fi != null) return fi;
-    throw ArgumentError('tag $tagNumber not defined in $_messageName');
+    throw ArgumentError('tag $tagNumber not defined in $messageName');
   }
 
   /// Returns the FieldInfo for a regular or extension field.
@@ -204,7 +204,7 @@ class FieldSet {
   }
 
   void _ensureWritable() {
-    if (_isReadOnly) frozenMessageModificationHandler(_messageName);
+    if (_isReadOnly) frozenMessageModificationHandler(messageName);
   }
 
   // Single-field operations
@@ -227,7 +227,7 @@ class FieldSet {
         return extensions!._getFieldOrDefault(fi);
       }
     }
-    throw ArgumentError('tag $tagNumber not defined in $_messageName');
+    throw ArgumentError('tag $tagNumber not defined in $messageName');
   }
 
   dynamic _getDefault(FieldInfo fi) {
@@ -331,7 +331,7 @@ class FieldSet {
     var fi = nonExtensionInfo(info, tagNumber);
     if (fi == null) {
       if (!hasExtensions) {
-        throw ArgumentError('tag $tagNumber not defined in $_messageName');
+        throw ArgumentError('tag $tagNumber not defined in $messageName');
       }
       extensions!._setField(tagNumber, value);
       return;
@@ -341,7 +341,7 @@ class FieldSet {
       throw ArgumentError(_setFieldFailedMessage(
           fi, value, 'repeating field (use get + .add())'));
     }
-    _validateField(fi, value);
+    validateField(fi, value);
     _setNonExtensionFieldUnchecked(info, fi, value);
   }
 
@@ -561,7 +561,7 @@ class FieldSet {
   }
 
   bool _$check(int index, var newValue) {
-    _validateField(_nonExtensionInfoByIndex(index), newValue);
+    validateField(_nonExtensionInfoByIndex(index), newValue);
     return true; // Allows use in an assertion.
   }
 
@@ -661,11 +661,11 @@ class FieldSet {
       }
 
       hash = _HashUtils._combine(hash, fi.tagNumber);
-      if (_isBytes(fi.type)) {
+      if (isBytesFieldType(fi.type)) {
         // Bytes are represented as a List<int> (Usually with byte-data).
         // We special case that to match our equality semantics.
         hash = _HashUtils._combine(hash, _HashUtils._hashObjects(value));
-      } else if (!_isEnum(fi.type)) {
+      } else if (!isEnumFieldType(fi.type)) {
         hash = _HashUtils._combine(hash, value.hashCode);
       } else if (fi.isRepeated) {
         hash = _HashUtils._hashObjects(value.map((enm) => enm.value));
@@ -747,7 +747,7 @@ class FieldSet {
       extensions!._info.keys.toList()
         ..sort()
         ..forEach((int tagNumber) => writeFieldValue(
-            extensions!._values[tagNumber],
+            extensions!.values[tagNumber],
             '[${extensions!._info[tagNumber]!.name}]'));
     }
     if (hasUnknownFields) {
@@ -798,12 +798,12 @@ class FieldSet {
       fi = otherFi;
     }
 
-    var mustClone = _isGroupOrMessage(otherFi.type);
+    var mustClone = isGroupOrMessageFieldType(otherFi.type);
 
     if (fi!.isMapField) {
       var f = fi as MapFieldInfo<dynamic, dynamic>;
-      mustClone = _isGroupOrMessage(f.valueFieldType!);
-      var map = f._ensureMapField(info, this) as PbMap<dynamic, dynamic>;
+      mustClone = isGroupOrMessageFieldType(f.valueFieldType!);
+      var map = f.ensureMapField(info, this) as PbMap<dynamic, dynamic>;
       if (mustClone) {
         for (MapEntry entry in fieldValue.entries) {
           map[entry.key] = (entry.value as GeneratedMessage).deepCopy();
@@ -818,14 +818,14 @@ class FieldSet {
       if (mustClone) {
         // fieldValue must be a PbListBase of GeneratedMessage.
         PbListBase<GeneratedMessage> pbList = fieldValue;
-        var repeatedFields = fi._ensureRepeatedField(info, this);
+        var repeatedFields = fi.ensureRepeatedField(info, this);
         for (var i = 0; i < pbList.length; ++i) {
           repeatedFields.add(pbList[i].deepCopy());
         }
       } else {
         // fieldValue must be at least a PbListBase.
         PbListBase pbList = fieldValue;
-        fi._ensureRepeatedField(meta, this).addAll(pbList);
+        fi.ensureRepeatedField(meta, this).addAll(pbList);
       }
       return;
     }
@@ -846,7 +846,7 @@ class FieldSet {
       _ensureExtensions()
           ._setFieldAndInfo(fi as Extension<dynamic>, fieldValue);
     } else {
-      _validateField(fi, fieldValue);
+      validateField(fi, fieldValue);
       _setNonExtensionFieldUnchecked(info, fi, fieldValue);
     }
   }
@@ -854,7 +854,7 @@ class FieldSet {
   // Error-checking
 
   /// Checks the value for a field that's about to be set.
-  void _validateField(FieldInfo fi, var newValue) {
+  void validateField(FieldInfo fi, var newValue) {
     _ensureWritable();
     var message = _getFieldError(fi.type, newValue);
     if (message != null) {
@@ -863,7 +863,7 @@ class FieldSet {
   }
 
   String _setFieldFailedMessage(FieldInfo fi, var value, String detail) {
-    return 'Illegal to set field ${fi.name} (${fi.tagNumber}) of $_messageName'
+    return 'Illegal to set field ${fi.name} (${fi.tagNumber}) of $messageName'
         ' to value ($value): $detail';
   }
 
