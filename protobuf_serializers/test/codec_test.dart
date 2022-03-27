@@ -3,17 +3,17 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-// import 'dart:typed_data';
-//
-// import 'package:protobuf/protobuf.dart';
-// import 'package:test/test.dart';
-//
-// import 'test_util.dart';
+import 'dart:typed_data';
 
-// typedef RoundtripTester<T> = void Function(T value, List<int> bytes);
+import 'package:protobuf/protobuf.dart';
+import 'package:protobuf_serializers/protobuf_serializers.dart';
+import 'package:test/test.dart';
+
+import 'test_util.dart';
+
+typedef RoundtripTester<T> = void Function(T value, List<int> bytes);
 
 void main() {
-/*
   ByteData makeData(Uint8List bytes) => ByteData.view(bytes.buffer);
 
   Uint8List Function(dynamic) convertToBytes(fieldType) => (value) {
@@ -719,5 +719,4 @@ void main() {
     expect(buffer.sublist(1, 4), expected);
     expect(writer.writeTo(buffer, 3), isFalse);
   });
-*/
 }
