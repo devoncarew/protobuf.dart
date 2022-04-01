@@ -15,10 +15,54 @@ bool _isEnum(int fieldType) =>
 bool _isBytes(int fieldType) =>
     PbFieldType._baseType(fieldType) == PbFieldType._BYTES_BIT;
 
+bool _isMessage(int fieldType) => (fieldType & PbFieldType._MESSAGE_BIT) != 0;
+
+bool _isGroup(int fieldType) => (fieldType & PbFieldType._GROUP_BIT) != 0;
+
 bool _isGroupOrMessage(int fieldType) =>
     (fieldType & (PbFieldType._GROUP_BIT | PbFieldType._MESSAGE_BIT)) != 0;
 
 bool _isMapField(int fieldType) => (fieldType & PbFieldType._MAP_BIT) != 0;
+
+class FieldTypeDetails {
+  final BaseFieldType baseType;
+  final bool isEnum;
+  final bool isGroup;
+  final bool isMap;
+  final bool isMessage;
+  final bool isRepeated;
+  final bool isRequired;
+
+  FieldTypeDetails(int type)
+      : baseType = PbFieldType.toBaseType(type),
+        isEnum = _isEnum(type),
+        isGroup = _isGroup(type),
+        isMap = _isMapField(type),
+        isMessage = _isMessage(type),
+        isRepeated = _isRepeated(type),
+        isRequired = _isRequired(type);
+}
+
+enum BaseFieldType {
+  bool,
+  bytes,
+  string,
+  double,
+  float,
+  enum_,
+  int32,
+  int64,
+  sint32,
+  sint64,
+  uint32,
+  uint64,
+  fixed32,
+  fixed64,
+  sfixed32,
+  sfixed64,
+  message,
+  map,
+}
 
 /// Defines constants and functions for dealing with fieldType bits.
 class PbFieldType {
@@ -26,6 +70,54 @@ class PbFieldType {
   /// and packed bits.
   static int _baseType(int fieldType) =>
       fieldType & ~(_REQUIRED_BIT | _REPEATED_BIT | _PACKED_BIT | _MAP_BIT);
+
+  static BaseFieldType toBaseType(int fieldType) {
+    final baseType = _baseType(fieldType);
+    assert(fieldType & (fieldType - 1) == 0,
+        'base type has more than one bit set: $baseType');
+    switch (_baseType(fieldType)) {
+      case PbFieldType._BOOL_BIT:
+        return BaseFieldType.bool;
+      case PbFieldType._BYTES_BIT:
+        return BaseFieldType.bytes;
+      case PbFieldType._STRING_BIT:
+        return BaseFieldType.string;
+      case PbFieldType._DOUBLE_BIT:
+        return BaseFieldType.double;
+      case PbFieldType._FLOAT_BIT:
+        return BaseFieldType.float;
+      case PbFieldType._ENUM_BIT:
+        return BaseFieldType.enum_;
+      case PbFieldType._GROUP_BIT:
+        throw ArgumentError('TODO: How to handle groups?');
+      case PbFieldType._INT32_BIT:
+        return BaseFieldType.int32;
+      case PbFieldType._INT64_BIT:
+        return BaseFieldType.int64;
+      case PbFieldType._SINT32_BIT:
+        return BaseFieldType.sint32;
+      case PbFieldType._SINT64_BIT:
+        return BaseFieldType.sint64;
+      case PbFieldType._UINT32_BIT:
+        return BaseFieldType.uint32;
+      case PbFieldType._UINT64_BIT:
+        return BaseFieldType.uint64;
+      case PbFieldType._FIXED32_BIT:
+        return BaseFieldType.fixed32;
+      case PbFieldType._FIXED64_BIT:
+        return BaseFieldType.fixed64;
+      case PbFieldType._SFIXED32_BIT:
+        return BaseFieldType.sfixed32;
+      case PbFieldType._SFIXED64_BIT:
+        return BaseFieldType.sfixed64;
+      case PbFieldType._MESSAGE_BIT:
+        return BaseFieldType.message;
+      case PbFieldType._MAP_BIT:
+        return BaseFieldType.map;
+      default:
+        throw ArgumentError('TODO: write an error message');
+    }
+  }
 
   static MakeDefaultFunc? _defaultForType(int type) {
     switch (type) {
