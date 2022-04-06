@@ -62,6 +62,7 @@ enum BaseFieldType {
   sfixed64,
   message,
   map,
+  group,
 }
 
 /// Defines constants and functions for dealing with fieldType bits.
@@ -72,9 +73,18 @@ class PbFieldType {
       fieldType & ~(_REQUIRED_BIT | _REPEATED_BIT | _PACKED_BIT | _MAP_BIT);
 
   static BaseFieldType toBaseType(int fieldType) {
-    final baseType = _baseType(fieldType);
+    var baseType = fieldType & ~(_REQUIRED_BIT | _REPEATED_BIT | _PACKED_BIT);
+
+    // _MAP sets both message and map bits, probably because in some places we
+    // want to handle maps as messages, but in others we treat them specially..
+    // TODO: figure this out
+    if (baseType == _MAP) {
+      return BaseFieldType.map;
+    }
+
     assert(baseType & (baseType - 1) == 0,
         'base type has more than one bit set: $baseType');
+
     switch (_baseType(fieldType)) {
       case PbFieldType._BOOL_BIT:
         return BaseFieldType.bool;
@@ -89,7 +99,7 @@ class PbFieldType {
       case PbFieldType._ENUM_BIT:
         return BaseFieldType.enum_;
       case PbFieldType._GROUP_BIT:
-        throw ArgumentError('TODO: How to handle groups?');
+        return BaseFieldType.group;
       case PbFieldType._INT32_BIT:
         return BaseFieldType.int32;
       case PbFieldType._INT64_BIT:

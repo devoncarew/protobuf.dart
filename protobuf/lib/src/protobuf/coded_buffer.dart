@@ -208,28 +208,23 @@ void _mergeFromCodedBufferReader(BuilderInfo meta, _FieldSet fs,
             ._ensureMapField(meta, mapFieldInfo)
             ._mergeEntry(mapEntryMeta, input, registry);
         break;
-    }
 
-    /*
-    var fieldType = fi.type;
-    fieldType &= ~(PbFieldType._PACKED_BIT | PbFieldType._REQUIRED_BIT);
-    switch (fieldType) {
-      case PbFieldType._OPTIONAL_GROUP:
-        var subMessage = meta._makeEmptyMessage(tagNumber, registry);
-        var oldValue = fs._getFieldOrNull(fi);
-        if (oldValue != null) {
-          subMessage.mergeFromMessage(oldValue);
+      case BaseFieldType.group:
+        if (fieldType.isRepeated) {
+          var subMessage = meta._makeEmptyMessage(tagNumber, registry);
+          input.readGroup(tagNumber, subMessage, registry);
+          fs._ensureRepeatedField(meta, fi).add(subMessage);
+        } else {
+          var subMessage = meta._makeEmptyMessage(tagNumber, registry);
+          var oldValue = fs._getFieldOrNull(fi);
+          if (oldValue != null) {
+            subMessage.mergeFromMessage(oldValue);
+          }
+          input.readGroup(tagNumber, subMessage, registry);
+          fs._setFieldUnchecked(meta, fi, subMessage);
         }
-        input.readGroup(tagNumber, subMessage, registry);
-        fs._setFieldUnchecked(meta, fi, subMessage);
-        break;
-      case PbFieldType._REPEATED_GROUP:
-        var subMessage = meta._makeEmptyMessage(tagNumber, registry);
-        input.readGroup(tagNumber, subMessage, registry);
-        fs._ensureRepeatedField(meta, fi).add(subMessage);
         break;
     }
-    */
   }
 }
 
