@@ -73,7 +73,7 @@ class PbFieldType {
 
   static BaseFieldType toBaseType(int fieldType) {
     final baseType = _baseType(fieldType);
-    assert(fieldType & (fieldType - 1) == 0,
+    assert(baseType & (baseType - 1) == 0,
         'base type has more than one bit set: $baseType');
     switch (_baseType(fieldType)) {
       case PbFieldType._BOOL_BIT:
